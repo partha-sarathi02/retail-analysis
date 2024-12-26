@@ -9,18 +9,23 @@ if __name__ == '__main__':
     .getOrCreate()
 
 #read the streaming data
-    lines= spark.readStream \
-    .format("socket") \
-    .option("host", "localhost") \
-    .option("port",9999) \
+
+    order_schema= 'order_id long, order_date date, order_customer_id long, order_status string'
+    order_df= spark.readStream \
+    .format("json") \
+    .schema(order_schema) \
+    .option("path", "/inputdir") \
     .load()
 #processing logic
+    order_df.createOrReplaceTempView("orders")
+    completed_orders= spark.sql("select * from orders where order_status='COMPLETE'")
 
 #write to sink
-    query= lines.writeStream \
+    query= completed_orders.writeStream \
     .outputMode("append") \
-    .format("console") \
+    .format("csv") \
+    .option("path","/outputdir") \
     .option("checkpointLocation","checkpointdir") \
     .start()
-
+    
 query.awaitTermination()
