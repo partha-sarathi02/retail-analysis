@@ -17,7 +17,7 @@ if __name__ == '__main__':
 #processing logic
 
 #write to sink
-    query= lines.writeStrem \
+    query= lines.writeStream \
     .outputMode("append") \
     .format("console") \
     .option("checkpointLocation","checkpointdir") \
